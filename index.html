@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
@@ -8,141 +9,249 @@
 body{
 margin:0;
 font-family:sans-serif;
-background:linear-gradient(#fff8f0,#f2e4d8);
+background:linear-gradient(#fff3e8,#ffd7b8);
 text-align:center;
 }
 
-h2{
-margin-top:10px;
-}
-
-#controls{
-margin:10px;
+h1{
+margin-top:40px;
+font-size:28px;
 }
 
 button{
-margin:4px;
-padding:10px 14px;
-font-size:16px;
+
+padding:12px 20px;
+margin:6px;
+font-size:18px;
 border:none;
-border-radius:8px;
-background:#b45f4b;
+border-radius:12px;
+background:#d45a3c;
 color:white;
-box-shadow:0 3px 6px rgba(0,0,0,0.2);
+box-shadow:0 4px 8px rgba(0,0,0,0.3);
+
 }
 
 button:active{
-transform:scale(0.95);
+
+transform:scale(0.9);
+
+}
+
+.screen{
+
+display:none;
+
+}
+
+.active{
+
+display:block;
+
 }
 
 #board{
+
 width:92vw;
 max-width:420px;
+
 margin:auto;
+
 display:grid;
-gap:3px;
+
+gap:4px;
+
 }
 
 .piece{
-width:100%;
+
 aspect-ratio:1;
-border-radius:6px;
-box-shadow:0 3px 6px rgba(0,0,0,0.3);
+
+border-radius:8px;
+
+box-shadow:0 4px 8px rgba(0,0,0,0.3);
+
 background-size:100% 100%;
-transition:transform 0.15s;
+
+transition:0.15s;
+
 }
 
 .piece:active{
-transform:scale(0.95);
+
+transform:scale(0.9);
+
 }
 
 #timer{
-font-size:18px;
-margin:5px;
+
+font-size:20px;
+
+margin:8px;
+
+}
+
+#best{
+
+font-size:16px;
+
+color:#444;
+
+}
+
+#imgNo{
+
+margin:6px;
+
 }
 
 #complete{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-display:none;
-align-items:center;
-justify-content:center;
-background:rgba(0,0,0,0.85);
-color:white;
-font-size:38px;
-flex-direction:column;
+
+font-size:32px;
+
+margin-top:20px;
+
 }
 
 .confetti{
+
 position:fixed;
+
 width:10px;
+
 height:10px;
+
 top:-10px;
+
 animation:fall linear forwards;
+
 }
 
 @keyframes fall{
+
 to{
+
 transform:translateY(110vh) rotate(720deg);
+
 }
+
 }
 
 </style>
+
 </head>
 
 <body>
 
-<h2>和菓子ジグソーパズル</h2>
+<!-- スタート画面 -->
 
-<div id="controls">
+<div id="start" class="screen active">
 
-<button onclick="changeImage(-1)">◀画像</button>
-<button onclick="changeImage(1)">画像▶</button>
+<h1>和菓子ジグソーパズル</h1>
 
-<br>
-
-<button onclick="setLevel(3)">かんたん</button>
-<button onclick="setLevel(4)">ふつう</button>
-<button onclick="setLevel(5)">むずかしい</button>
-
-<br>
-
-<button onclick="shuffle()">シャッフル</button>
+<button onclick="startGame()">ゲームスタート</button>
 
 </div>
 
+<!-- ゲーム画面 -->
+
+<div id="game" class="screen">
+
+<div>
+
+<button onclick="changeImage(-1)">◀</button>
+
+<button onclick="changeImage(1)">▶</button>
+
+</div>
+
+<div id="imgNo"></div>
+
+<div>
+
+<button onclick="setLevel(3)">かんたん</button>
+
+<button onclick="setLevel(4)">ふつう</button>
+
+<button onclick="setLevel(5)">むずかしい</button>
+
+</div>
+
+<button onclick="shuffle()">シャッフル</button>
+
 <div id="timer">TIME 0</div>
+
+<div id="best">BEST -</div>
 
 <div id="board"></div>
 
-<div id="complete">
-<div id="clearText">🎉完成！🎉</div>
+</div>
+
+<!-- クリア画面 -->
+
+<div id="clear" class="screen">
+
+<div id="complete"></div>
+
 <button onclick="restart()">もう一度</button>
+
+<button onclick="goTitle()">タイトル</button>
+
 </div>
 
 <script>
 
 let images=[
+
 "puzzle1.jpg",
 "puzzle2.jpg",
-"puzzle3.jpg"
+"puzzle3.jpg",
 "puzzle4.jpg",
 "puzzle5.jpg",
+"puzzle6.jpg",
+"puzzle7.jpg",
+"puzzle8.jpg",
+"puzzle9.jpg",
+"puzzle10.jpg"
+
 ];
 
 let currentImage=0;
+
 let size=3;
 
 let board=document.getElementById("board");
 
 let pieces=[];
+
 let selected=null;
 
 let timer=0;
+
 let timerInterval=null;
+
+function showScreen(id){
+
+document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+
+document.getElementById(id).classList.add("active");
+
+}
+
+function startGame(){
+
+showScreen("game");
+
+setLevel(3);
+
+}
+
+function updateImageNo(){
+
+document.getElementById("imgNo").innerText=
+
+(currentImage+1)+" / "+images.length;
+
+}
 
 function startTimer(){
 
@@ -165,25 +274,25 @@ function setLevel(n){
 size=n;
 
 board.innerHTML="";
+
 pieces=[];
 
 board.style.gridTemplateColumns=`repeat(${size},1fr)`;
 
 for(let y=0;y<size;y++){
+
 for(let x=0;x<size;x++){
 
 let p=document.createElement("div");
 
 p.className="piece";
 
-p.dataset.x=x;
-p.dataset.y=y;
-
 p.style.backgroundImage=`url(${images[currentImage]})`;
 
 p.style.backgroundSize=`${size*100}% ${size*100}%`;
 
 p.style.backgroundPosition=
+
 `${(x/(size-1))*100}% ${(y/(size-1))*100}%`;
 
 p.addEventListener("click",tapPiece);
@@ -193,9 +302,14 @@ board.appendChild(p);
 pieces.push(p);
 
 }
+
 }
 
+updateImageNo();
+
 startTimer();
+
+loadBest();
 
 }
 
@@ -204,18 +318,19 @@ function tapPiece(){
 if(selected==null){
 
 selected=this;
+
 this.style.outline="3px solid yellow";
 
 }else{
 
 let temp=this.style.backgroundPosition;
 
-this.style.backgroundPosition=
-selected.style.backgroundPosition;
+this.style.backgroundPosition=selected.style.backgroundPosition;
 
 selected.style.backgroundPosition=temp;
 
 selected.style.outline="none";
+
 selected=null;
 
 checkComplete();
@@ -226,17 +341,13 @@ checkComplete();
 
 function shuffle(){
 
-let positions=[];
+let pos=[];
 
-pieces.forEach(p=>{
-positions.push(p.style.backgroundPosition);
-});
+pieces.forEach(p=>pos.push(p.style.backgroundPosition));
 
-positions.sort(()=>Math.random()-0.5);
+pos.sort(()=>Math.random()-0.5);
 
-pieces.forEach((p,i)=>{
-p.style.backgroundPosition=positions[i];
-});
+pieces.forEach((p,i)=>p.style.backgroundPosition=pos[i]);
 
 startTimer();
 
@@ -249,39 +360,44 @@ let correct=true;
 pieces.forEach((p,i)=>{
 
 let x=i%size;
+
 let y=Math.floor(i/size);
 
 let pos=p.style.backgroundPosition.split(" ");
 
 let px=parseFloat(pos[0]);
+
 let py=parseFloat(pos[1]);
 
 let cx=(x/(size-1))*100;
+
 let cy=(y/(size-1))*100;
 
-if(Math.abs(px-cx)>1 || Math.abs(py-cy)>1){
-correct=false;
-}
+if(Math.abs(px-cx)>1||Math.abs(py-cy)>1) correct=false;
 
 });
 
 if(correct){
 
 clearInterval(timerInterval);
-showEffect();
+
+saveBest();
+
+showClear();
 
 }
 
 }
 
-function showEffect(){
+function showClear(){
 
-document.getElementById("complete").style.display="flex";
+showScreen("clear");
 
-document.getElementById("clearText").innerText=
-"🎉完成！ TIME "+timer+" 秒";
+document.getElementById("complete").innerText=
 
-for(let i=0;i<120;i++){
+"🎉完成 "+timer+" 秒";
+
+for(let i=0;i<140;i++){
 
 let c=document.createElement("div");
 
@@ -290,9 +406,11 @@ c.className="confetti";
 c.style.left=Math.random()*100+"%";
 
 c.style.background=
+
 `hsl(${Math.random()*360},100%,50%)`;
 
 c.style.animationDuration=
+
 2+Math.random()*2+"s";
 
 document.body.appendChild(c);
@@ -301,13 +419,51 @@ document.body.appendChild(c);
 
 }
 
+function saveBest(){
+
+let key="best"+size;
+
+let best=localStorage.getItem(key);
+
+if(best==null||timer<best){
+
+localStorage.setItem(key,timer);
+
+}
+
+}
+
+function loadBest(){
+
+let key="best"+size;
+
+let best=localStorage.getItem(key);
+
+if(best){
+
+document.getElementById("best").innerText="BEST "+best+" 秒";
+
+}else{
+
+document.getElementById("best").innerText="BEST -";
+
+}
+
+}
+
 function restart(){
 
-document.getElementById("complete").style.display="none";
+showScreen("game");
 
 setLevel(size);
 
 shuffle();
+
+}
+
+function goTitle(){
+
+showScreen("start");
 
 }
 
@@ -322,8 +478,6 @@ if(currentImage>=images.length) currentImage=0;
 setLevel(size);
 
 }
-
-setLevel(3);
 
 </script>
 
